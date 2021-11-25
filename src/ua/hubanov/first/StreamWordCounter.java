@@ -1,5 +1,7 @@
 package ua.hubanov.first;
 
+import ua.hubanov.utils.TxtFileFilter;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -17,14 +19,14 @@ public class StreamWordCounter {
     public static void process(String path) throws IOException {
         long start = System.currentTimeMillis();
 
-        List<Path> filesList = getFilesList(path);;
+        List<Path> filesList = getFilesList(path);
         Map<String, Long> countedWords = countWords(filesList);
 
         Map<String, Map<String, Long>> splittedAndSortedWords = splitMapOfWords(countedWords);
         writeToFiles(splittedAndSortedWords);
 
         long elapsedTime = System.currentTimeMillis() - start;
-        System.out.println("StreamWordCounter finished proccess in " + elapsedTime);
+        System.out.println("StreamWordCounter finished process in " + elapsedTime + "millis");
     }
 
     private static List<Path> getFilesList(String path) {
@@ -38,7 +40,7 @@ public class StreamWordCounter {
     }
 
     private static Map<String, Long> countWords(List<Path> pathList) throws IOException {
-        return pathList.parallelStream()
+        return pathList.stream()
                 .flatMap(StreamWordCounter::getLinesFromFile)
                 .flatMap(line -> Arrays.stream(line.trim().split(" ")))
                 .map(word -> word.replaceAll("[^a-zA-Z]", "").toLowerCase().trim())

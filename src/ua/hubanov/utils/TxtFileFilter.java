@@ -1,4 +1,4 @@
-package ua.hubanov.first;
+package ua.hubanov.utils;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
