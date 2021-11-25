@@ -16,6 +16,9 @@ import java.util.stream.Stream;
 
 public class ParallelStreamWordCounter {
 
+    private static final String TXT_FILE_EXTENSION = ".txt";
+    private static final String KEY_VALUE_SEPARATOR = " : ";
+    private static final String ALL_WORDS_PATTERN = "[^a-zA-Z]";
     private static final Map<String, Pattern> mapOfPatterns = new HashMap<>();
 
     static {
@@ -59,14 +62,14 @@ public class ParallelStreamWordCounter {
 
     private static void combineWordsToOneMap(Map<String, Long> input, Map<String, Long> result) {
         for (Map.Entry<String, Long> e : input.entrySet()) {
-            result.put(e.getKey(), e.getValue() + result.getOrDefault(e.getKey(), 1L));
+            result.put(e.getKey(), e.getValue() + result.getOrDefault(e.getKey(), 0L));
         }
     }
 
     private static Map<String, Long> countWordsOfAFile(Path path) {
         return getLinesFromFile(path)
                 .flatMap(line -> Arrays.stream(line.trim().split(" ")))
-                .map(word -> word.replaceAll("[^a-zA-Z]", "").toLowerCase().trim())
+                .map(word -> word.replaceAll(ALL_WORDS_PATTERN, "").toLowerCase().trim())
                 .filter(word -> !word.isEmpty())
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
     }
@@ -104,8 +107,8 @@ public class ParallelStreamWordCounter {
         try {
             createFoldersAndFilesIfNotExist(path, map.getKey());
 
-            Files.write(Paths.get(path + map.getKey() + ".txt"), () -> map.getValue().entrySet().stream()
-                    .<CharSequence>map(e -> e.getKey() + " : " + e.getValue())
+            Files.write(Paths.get(path + map.getKey() + TXT_FILE_EXTENSION), () -> map.getValue().entrySet().stream()
+                    .<CharSequence>map(e -> e.getKey() + KEY_VALUE_SEPARATOR + e.getValue())
                     .iterator());
         } catch (IOException e) {
             e.printStackTrace();
@@ -113,9 +116,9 @@ public class ParallelStreamWordCounter {
     }
 
     private static void createFoldersAndFilesIfNotExist(String path, String k) throws IOException {
-        File file = new File(path, k + ".txt");
+        File file = new File(path, k + TXT_FILE_EXTENSION);
         if (!file.exists()) {
-            Path storagePath = Paths.get(path + k + ".txt");
+            Path storagePath = Paths.get(path + k + TXT_FILE_EXTENSION);
             Files.createDirectories(storagePath.getParent());
             Files.createFile(storagePath);
         }
